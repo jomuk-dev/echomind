@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from app.models import Base
+
 load_dotenv()
 
 DATABASE_URL = (
@@ -15,14 +17,23 @@ DATABASE_URL = (
     f"{os.getenv('DB_NAME')}"
 )
 
-engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(
-    autoflush=False,
-    autocommit=False,
-    bind=engine,
+engine = create_engine(
+    DATABASE_URL,
+    echo=False,
 )
 
-from app.models import Base
+SessionLocal = sessionmaker(
+    bind=engine,
+    autoflush=False,
+    autocommit=False,
+)
 
 Base.metadata.create_all(bind=engine)
+
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
