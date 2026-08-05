@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../services/permission_service.dart';
+import '../services/gallery_service.dart';
+import '../indexer/indexer_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,6 +12,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   bool photoPermission = false;
+  int photoCount = 0;
+
+  final permissionService = PermissionService();
+  final galleryService = GalleryService();
+  final indexerService = IndexerService();
 
   @override
   Widget build(BuildContext context) {
@@ -20,39 +28,42 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            const Icon(
-              Icons.search,
-              size: 80,
+            const Center(
+              child: Icon(
+                Icons.search,
+                size: 80,
+              ),
             ),
 
             const SizedBox(height: 20),
 
-            const Text(
-              "EchoMind",
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
+            const Center(
+              child: Text(
+                "EchoMind",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
 
             const SizedBox(height: 10),
 
-            const Text(
-              "AI 기반 개인 검색 엔진",
+            const Center(
+              child: Text(
+                "AI 기반 개인 검색 엔진",
+              ),
             ),
 
             const SizedBox(height: 50),
 
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "사진 접근 권한",
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
+            const Text(
+              "사진 접근 권한",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
               ),
             ),
 
@@ -67,11 +78,38 @@ class _HomeScreenState extends State<HomeScreen> {
             SwitchListTile(
               title: Text(photoPermission ? "허용됨" : "허용 안됨"),
               value: photoPermission,
-              onChanged: (value) {
-                setState(() {
-                  photoPermission = value;
-                });
+              onChanged: (value) async {
+                final granted =
+                    await permissionService.requestPhotoPermission();
+
+                if (granted) {
+                  final count = await galleryService.getPhotoCount();
+                  final photos = await indexerService.scanGallery();
+
+                  setState(() {
+                    photoPermission = true;
+                    photoCount = count;
+                  });
+
+                  debugPrint("PhotoModel 개수 : ${photos.length}");
+
+                  if (photos.isNotEmpty) {
+                    debugPrint(photos.first.toString());
+                  }
+                }
               },
+            ),
+
+            const SizedBox(height: 20),
+
+            Center(
+              child: Text(
+                "사진 개수 : $photoCount장",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
 
             const SizedBox(height: 40),
