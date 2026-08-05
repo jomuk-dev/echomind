@@ -11,3 +11,10 @@ def root():
         "project": "EchoMind",
         "status": "running"
     }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "ok"
+    }

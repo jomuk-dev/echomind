@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/permission_service.dart';
 import '../services/gallery_service.dart';
+import '../services/api_service.dart';
 import '../indexer/indexer_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -13,10 +14,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   bool photoPermission = false;
   int photoCount = 0;
+  String apiStatus = "-";
 
   final permissionService = PermissionService();
   final galleryService = GalleryService();
   final indexerService = IndexerService();
+  final apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -85,10 +88,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (granted) {
                   final count = await galleryService.getPhotoCount();
                   final photos = await indexerService.scanGallery();
+                  final status = await apiService.getStatus();
 
                   setState(() {
                     photoPermission = true;
                     photoCount = count;
+                    apiStatus = status;
                   });
 
                   debugPrint("PhotoModel 개수 : ${photos.length}");
@@ -105,6 +110,18 @@ class _HomeScreenState extends State<HomeScreen> {
             Center(
               child: Text(
                 "사진 개수 : $photoCount장",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            Center(
+              child: Text(
+                "API 상태 : $apiStatus",
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
